@@ -1,0 +1,26 @@
+ThisIsNotAProperName12345
+email-without-at-symbol
+EXPERIENCE
+job title with no company
+RANDOM TEXT HERE 
+WITH NO STRUCTURE
+
+some bullet points
+• but they don't make sense
+• 123456789
+• !@#$%^&*()
+
+EDUCATION
+University Name Only
+No Degree Specified
+
+SKILLS
+Programming Languages
+(No actual languages listed)
+
+Another Section
+With No Content Following
+
+@#$%^&*()
+Numbers: 1234567890
+Random: abcdefghijklmnopqrstuvwxyz

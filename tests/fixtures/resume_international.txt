@@ -1,0 +1,149 @@
+MARIE-CLAIRE DUBOIS
+marie.claire.dubois@email.fr | +33 1 42 86 77 89 | Skype: marie.dubois.dev
+LinkedIn: fr.linkedin.com/in/marie-claire-dubois | Portfolio: marie-dubois.fr
+75001 Paris, France
+
+PROFIL PROFESSIONNEL
+Ingénieure logiciel expérimentée avec 7 ans d'expérience dans le développement d'applications web et mobiles. Spécialisée en technologies frontend avec une forte expertise en React, Vue.js et design UX/UI. Passionnée par l'innovation technologique et l'amélioration continue des processus de développement.
+
+EXPÉRIENCE PROFESSIONNELLE
+
+Ingénieure Logiciel Senior
+Capgemini | Paris, France
+Janvier 2021 - Présent
+• Développement d'applications web pour clients du CAC 40
+• Leadership technique d'une équipe de 6 développeurs
+• Migration d'applications legacy vers architectures modernes
+• Mise en place de bonnes pratiques DevOps et CI/CD
+• Technologies: React, TypeScript, Node.js, Azure DevOps
+
+Développeuse Frontend
+Société Générale | La Défense, France
+Mars 2019 - Décembre 2020
+• Développement d'interfaces utilisateur pour applications bancaires
+• Implémentation de composants réutilisables avec React/Redux
+• Collaboration avec équipes UX pour optimiser l'expérience utilisateur
+• Respect des normes de sécurité bancaire et réglementations RGPD
+• Stack technique: React, Redux, TypeScript, SASS, Jest
+
+Développeuse Web Full-Stack
+Startup French Tech - InnovTech | Lyon, France
+Septembre 2017 - Février 2019
+• Développement d'une plateforme SaaS de gestion de projet
+• Architecture et développement APIs RESTful
+• Intégration de solutions de paiement (Stripe, PayPal)
+• Déploiement sur infrastructure cloud AWS
+• Technologies: Vue.js, Python/Django, PostgreSQL, Docker
+
+Développeuse Junior
+Freelance | Lyon, France
+Juin 2016 - Août 2017
+• Création de sites web pour PME locales
+• Développement d'applications mobiles avec React Native
+• Maintenance et optimisation SEO de sites existants
+• Formation clients à l'utilisation des CMS
+
+FORMATION
+
+Diplôme d'Ingénieur en Informatique
+École Centrale Lyon | Lyon, France
+Septembre 2012 - Juin 2016
+Mention Très Bien | Classement: 15/180
+Spécialisation: Systèmes d'Information et Réseaux
+Projet de fin d'études: Plateforme d'apprentissage adaptatif utilisant l'IA
+
+Classes Préparatoires aux Grandes Écoles (CPGE)
+Lycée du Parc | Lyon, France
+Septembre 2010 - Juin 2012
+Filière MPSI/MP* (Mathématiques, Physique, Sciences de l'Ingénieur)
+
+Baccalauréat Scientifique
+Lycée International de Lyon | Lyon, France
+Obtenu en Juin 2010
+Mention Très Bien (18.5/20) | Option Anglais Européen
+Prix d'excellence en Mathématiques
+
+COMPÉTENCES TECHNIQUES
+
+Langages de Programmation:
+• Expert: JavaScript/TypeScript, HTML5, CSS3/SASS
+• Avancé: Python, PHP, Java
+• Intermédiaire: C++, Go, Swift
+
+Frameworks & Bibliothèques:
+• Frontend: React, Vue.js, Angular, Next.js, Nuxt.js
+• Backend: Django, Flask, Express.js, Spring Boot
+• Mobile: React Native, Flutter, Ionic
+• CSS: Bootstrap, Tailwind CSS, Material-UI, Vuetify
+
+Bases de Données:
+• Relationnelles: PostgreSQL, MySQL, Oracle
+• NoSQL: MongoDB, Redis, Elasticsearch
+• Cloud: Amazon RDS, Azure SQL Database
+
+Outils & Technologies:
+• Cloud: AWS, Microsoft Azure, Google Cloud Platform
+• DevOps: Docker, Kubernetes, Jenkins, GitLab CI/CD
+• Versioning: Git, SVN
+• IDE: VS Code, IntelliJ IDEA, WebStorm
+• Design: Figma, Adobe XD, Sketch
+
+PROJETS PERSONNELS
+
+Application de Covoiturage Écologique "EcoRide"
+https://github.com/marieclairedubois/ecoride | https://ecoride.fr
+Février 2022 - Août 2022
+• Application mobile cross-platform pour covoiturage écologique
+• Features: Géolocalisation, calcul d'empreinte carbone, système de notation
+• Technologies: React Native, Node.js/Express, MongoDB, Google Maps API
+• 2000+ téléchargements sur App Store et Google Play
+
+Portfolio Interactif avec Three.js
+https://marie-dubois.fr | https://github.com/marieclairedubois/portfolio3d
+Octobre 2021 - Janvier 2022
+• Site portfolio avec animations 3D immersives
+• Showcase de projets avec visualisations interactives
+• Technologies: React, Three.js, GSAP, Gatsby, Netlify
+
+Bot Discord pour Communauté de Développeurs
+https://github.com/marieclairedubois/dev-community-bot
+Mai 2021 - Juillet 2021
+• Bot automatisé pour modération et assistance communauté Discord
+• Fonctionnalités: Système de points, quiz techniques, intégration GitHub
+• Technologies: Node.js, Discord.js, MongoDB, Heroku
+
+CERTIFICATIONS
+
+Microsoft Certified: Azure Developer Associate
+Microsoft | Obtenue: Mars 2023 | ID: AZ-204-567890
+
+AWS Certified Solutions Architect - Associate
+Amazon Web Services | Obtenue: Novembre 2022 | Credential ID: AWS-SAA-123456
+
+Google Analytics Individual Qualification
+Google | Obtenue: Septembre 2022 | Valide jusqu'en: Septembre 2024
+
+Certification Scrum Master (PSM I)
+Scrum.org | Obtenue: Juin 2021 | Assessment ID: PSM-654321
+
+LANGUES
+
+• Français: Langue maternelle
+• Anglais: Courant (C1 - TOEIC 950/990)
+• Espagnol: Intermédiaire (B2 - DELE)
+• Allemand: Notions de base (A2)
+• Mandarin: Débutant (HSK 2)
+
+ACTIVITÉS EXTRA-PROFESSIONNELLES
+
+• Conférencière: Interventions dans écoles d'ingénieurs sur carrières tech au féminin
+• Bénévolat: Enseignement programmation enfants défavorisés (Association "Code ton Avenir")
+• Mentoring: Accompagnement jeunes développeuses (programme "Femmes du Numérique")
+• Sports: Marathon (PB: 3h45), escalade, yoga
+• Loisirs: Photographie, voyages, lecture de SF, contribution open-source
+
+DISTINCTIONS & PRIX
+
+• Prix "Jeune Talent Féminin Tech" - French Tech Lyon (2019)
+• Lauréate concours "Innovation Étudiante" - École Centrale Lyon (2016)
+• Bourse d'excellence "Eiffel" - Campus France (2015)

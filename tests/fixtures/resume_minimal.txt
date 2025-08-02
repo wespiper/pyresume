@@ -1,0 +1,20 @@
+Jane Doe
+jane.doe@gmail.com
+(415) 987-6543
+
+EXPERIENCE
+Software Developer, TechStart LLC
+2021 - Present
+Python, Django, React
+
+Junior Developer, WebCorp
+2019 - 2021
+JavaScript, HTML, CSS
+
+EDUCATION
+B.S. Computer Science
+San Jose State University
+2019
+
+SKILLS
+Python, JavaScript, React, Django, SQL

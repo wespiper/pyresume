@@ -1,0 +1,78 @@
+JOHN SMITH
+john.smith@email.com | (555) 123-4567 | https://linkedin.com/in/johnsmith | https://github.com/johnsmith
+San Francisco, CA
+
+SUMMARY
+Senior Software Engineer with 8+ years of experience developing scalable web applications and leading cross-functional teams. Expertise in Python, JavaScript, and cloud technologies. Proven track record of delivering high-quality software solutions that drive business growth.
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer
+Google Inc. | Mountain View, CA
+January 2020 - Present
+• Lead development of microservices architecture serving 10M+ daily users
+• Implemented automated testing framework reducing bug reports by 40%
+• Mentored 5 junior developers on best practices and code review
+• Collaborated with product managers to define technical requirements
+• Optimized database queries improving response time by 30%
+
+Software Engineer
+Microsoft Corporation | Seattle, WA
+June 2018 - December 2019
+• Developed RESTful APIs using Python and Django framework
+• Built responsive web interfaces with React and TypeScript
+• Implemented CI/CD pipelines using Azure DevOps
+• Participated in agile development process with 2-week sprints
+• Contributed to open-source projects maintained by the team
+
+Junior Software Developer
+Startup Technologies Inc. | San Francisco, CA
+August 2016 - May 2018
+• Built web applications using JavaScript, HTML, and CSS
+• Integrated third-party APIs for payment processing and analytics
+• Collaborated with designers to implement pixel-perfect UI/UX
+• Participated in code reviews and technical discussions
+
+EDUCATION
+
+Bachelor of Science in Computer Science
+University of California, Berkeley | Berkeley, CA
+September 2012 - May 2016
+GPA: 3.8/4.0
+
+SKILLS
+
+Programming Languages: Python, JavaScript, TypeScript, Java, Go
+Web Technologies: React, Angular, Django, Flask, Node.js, HTML5, CSS3
+Databases: PostgreSQL, MySQL, MongoDB, Redis
+Cloud & DevOps: AWS, Docker, Kubernetes, Jenkins, Terraform
+Tools: Git, JIRA, VS Code, Postman
+
+PROJECTS
+
+E-commerce Platform
+February 2020 - June 2020
+• Developed full-stack e-commerce application using React and Django
+• Integrated Stripe payment processing and inventory management
+• Implemented search functionality with Elasticsearch
+• Technologies: React, Django, PostgreSQL, Docker, AWS
+
+Personal Finance Tracker
+https://github.com/johnsmith/finance-tracker
+September 2019 - December 2019
+• Built personal finance tracking application with data visualization
+• Created automated categorization using machine learning
+• Technologies: Python, Flask, SQLite, Chart.js
+
+CERTIFICATIONS
+
+AWS Certified Solutions Architect - Associate
+Amazon Web Services | Issued: March 2021 | Credential ID: AWS-ASA-12345
+
+Google Cloud Professional Cloud Architect
+Google Cloud | Issued: November 2020 | Expires: November 2022
+
+LANGUAGES
+
+English (Native)
+Spanish (Conversational)
