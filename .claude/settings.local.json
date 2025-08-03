@@ -14,7 +14,26 @@
       "Bash(source:*)",
       "Bash(pip install:*)",
       "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python test_parser.py)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python test_docx_extraction.py)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python test_docx_simple.py)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/pip list)",
+      "Bash(rm:*)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python examine_resume.py)",
+      "WebFetch(domain:help.lever.co)",
+      "WebFetch(domain:github.com)",
+      "Bash(find:*)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python test_lever_issues.py)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python test_lever_detailed.py)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/pytest tests/test_lever_compatibility.py -v)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/pytest tests/test_end_to_end.py::TestWesleyResumeE2E::test_complete_resume_parsing -v)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python -c \"from pyresume import ResumeParser, IntelligentResumeParser; print(''Main classes imported successfully'')\")",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python -m pip uninstall pyresume -y)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python -m pip install /Users/wnp/Desktop/pyresume/dist/pyresume-0.1.0-py3-none-any.whl)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python -c \"\nimport pyresume\nprint(''✓ Package installed from wheel successfully'')\nprint(''✓ Version:'', pyresume.__version__)\n\nfrom pyresume import ResumeParser, IntelligentResumeParser\nfrom pyresume import Resume, ContactInfo, Experience, Education\nfrom pyresume import PDFExtractor, DOCXExtractor, TextExtractor\nprint(''✓ All main components work correctly from wheel'')\n\")",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python -m pip install twine)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python -m twine check dist/*)",
+      "Bash(/Users/wnp/Desktop/pyresume/venv/bin/python -m build)"
     ],
     "deny": []
   }

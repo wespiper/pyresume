@@ -81,7 +81,10 @@ class ResumeParser:
         resume = Resume(raw_text=text)
         
         try:
-            # Normalize text
+            # First merge split lines to handle PDF extraction issues
+            text = ResumePatterns.merge_split_lines(text)
+            
+            # Then normalize whitespace
             text = ResumePatterns.normalize_whitespace(text)
             
             # Find section boundaries
@@ -94,7 +97,7 @@ class ResumeParser:
                 resume.confidence_scores['contact_info'] = contact_confidence
             except Exception as e:
                 resume.confidence_scores['contact_info'] = 0.0
-                print(f"Error extracting contact info: {e}")
+                # Error extracting contact info
             
             # Extract summary if present
             try:
@@ -118,7 +121,7 @@ class ResumeParser:
                                 break
             except Exception as e:
                 resume.confidence_scores['summary'] = 0.0
-                print(f"Error extracting summary: {e}")
+                # Error extracting summary
             
             # Extract experience
             try:
@@ -136,7 +139,7 @@ class ResumeParser:
                         resume.confidence_scores['experience'] = exp_confidence * 0.7  # Lower confidence
             except Exception as e:
                 resume.confidence_scores['experience'] = 0.0
-                print(f"Error extracting experience: {e}")
+                # Error extracting experience
             
             # Extract education
             try:
@@ -154,7 +157,7 @@ class ResumeParser:
                         resume.confidence_scores['education'] = edu_confidence * 0.7  # Lower confidence
             except Exception as e:
                 resume.confidence_scores['education'] = 0.0
-                print(f"Error extracting education: {e}")
+                # Error extracting education
             
             # Extract skills
             try:
@@ -171,7 +174,7 @@ class ResumeParser:
                     resume.confidence_scores['skills'] = skills_confidence * 0.8
             except Exception as e:
                 resume.confidence_scores['skills'] = 0.0
-                print(f"Error extracting skills: {e}")
+                # Error extracting skills
             
             # Extract projects
             try:
@@ -183,7 +186,7 @@ class ResumeParser:
                     resume.confidence_scores['projects'] = proj_confidence
             except Exception as e:
                 resume.confidence_scores['projects'] = 0.0
-                print(f"Error extracting projects: {e}")
+                # Error extracting projects
             
             # Extract certifications
             try:
@@ -201,7 +204,7 @@ class ResumeParser:
                         resume.confidence_scores['certifications'] = cert_confidence * 0.7
             except Exception as e:
                 resume.confidence_scores['certifications'] = 0.0
-                print(f"Error extracting certifications: {e}")
+                # Error extracting certifications
             
             # Extract languages
             try:
@@ -213,7 +216,7 @@ class ResumeParser:
                     resume.confidence_scores['languages'] = 0.9 if languages else 0.0
             except Exception as e:
                 resume.confidence_scores['languages'] = 0.0
-                print(f"Error extracting languages: {e}")
+                # Error extracting languages
             
             # Calculate overall confidence
             confidence_values = [v for v in resume.confidence_scores.values() if v > 0]
@@ -236,7 +239,7 @@ class ResumeParser:
             }
             
         except Exception as e:
-            print(f"Error in resume parsing: {e}")
+            # Error in resume parsing
             # Ensure we return a valid Resume object even on error
             resume.extraction_metadata = {
                 'error': str(e),
@@ -356,43 +359,40 @@ class ResumeParser:
         Returns:
             Extracted name or None
         """
-        # Try pattern-based extraction first
-        text_start = '\n'.join(lines[:10])
-        potential_names = ResumePatterns.extract_name_patterns(text_start)
+        # First try the context-aware extraction with the full text
+        full_text = '\n'.join(lines)
+        name = ResumePatterns.extract_name_with_context(full_text)
+        if name:
+            return name
         
-        # Validate and return the first valid name
-        for name in potential_names:
-            if ResumePatterns.is_valid_name(name):
-                return name
-        
-        # Fallback: Look for name in first few non-empty lines
-        for i, line in enumerate(lines):
+        # Fallback to line-by-line extraction with improved validation
+        for i, line in enumerate(lines[:10]):  # Check first 10 lines
             line = line.strip()
-            if not line or i > 5:  # Only check first 5 non-empty lines
+            if not line:
+                continue
+            
+            # Skip if it's a section header
+            if ResumePatterns.is_section_header(line):
                 continue
             
             # Skip lines that look like headers or contain special characters
-            if any(char in line for char in ['@', '|', '•', '/', 'http', 'www', ':', '-', '(', ')']):
+            skip_chars = ['@', '|', '•', 'http', 'www', '.com', '.org', '.net', '.edu']
+            if any(char in line.lower() for char in skip_chars):
                 continue
             
-            # Skip lines with numbers (likely phone)
+            # Skip lines with phone patterns
             if re.search(r'\d{3,}', line):
                 continue
             
             # Skip lines that are too short or too long
-            if len(line) < 5 or len(line) > 50:
+            if len(line) < 3 or len(line) > 50:
                 continue
             
             # Check if line contains name-like pattern
-            words = line.split()
-            if 2 <= len(words) <= 4:
-                # Check if words start with capital letters or are all caps
-                if all(word[0].isupper() or word.isupper() for word in words if word and word.isalpha()):
-                    # Additional validation
-                    if ResumePatterns.is_valid_name(line):
-                        # Don't include lines that have job title keywords
-                        if not ResumePatterns.is_likely_job_title(line):
-                            return line.title() if line.isupper() else line
+            if ResumePatterns.is_valid_name(line):
+                # Don't include lines that have job title keywords
+                if not ResumePatterns.is_likely_job_title(line):
+                    return line.title() if line.isupper() else line
         
         return None
     
@@ -435,7 +435,12 @@ class ResumeParser:
     
     def _parse_experience_block(self, block: str) -> Optional[Experience]:
         """
-        Parse a single experience block.
+        Parse a single experience block using Lever-style patterns.
+        
+        Lever patterns:
+        - Title (ALL CAPS or Title Case)
+        - Company | Location or Company - Location
+        - MM/YYYY - MM/YYYY or MM/YYYY - Present
         
         Args:
             block: Text block potentially containing experience
@@ -452,92 +457,218 @@ class ResumeParser:
         # Track which lines we've used
         used_lines = set()
         
-        # Look for dates first (they help identify the structure)
-        for i, line in enumerate(lines[:4]):  # Check first 4 lines
-            if any(pattern.search(line) for pattern in ResumePatterns.DATE_PATTERNS):
-                start_date, end_date = DateParser.extract_date_range(line)
-                if start_date:
-                    exp.start_date = start_date
-                    exp.end_date = end_date
-                    if DateParser.is_current_position(line):
-                        exp.current = True
-                        exp.end_date = None
-                    used_lines.add(i)
-                break
-        
-        # Parse title and company based on common patterns
+        # Track what we've found
         title_found = False
         company_found = False
         
-        # Pattern 1: Title at Company (Location)
-        for i, line in enumerate(lines[:3]):
-            if i in used_lines:
-                continue
-                
-            match = re.match(r'^(.+?)\s+(?:at|@)\s+(.+?)(?:\s*[\|\,]\s*(.+))?$', line, re.IGNORECASE)
-            if match:
-                exp.title = match.group(1).strip()
-                exp.company = match.group(2).strip()
-                if match.group(3):
-                    location_part = match.group(3).strip()
-                    # Check if it's a location
-                    if re.search(r'\b[A-Z]{2}\b', location_part):
-                        exp.location = location_part
-                title_found = company_found = True
-                used_lines.add(i)
-                break
+        # CRITICAL FIX: Skip blocks that start with a bullet point
+        # Lever never treats bullet points as company names
+        if lines[0].strip() and re.match(r'^[•▪▫‣⁃\-\*]\s*', lines[0].strip()):
+            return None
         
-        # Pattern 2: Company | Title or Title | Company
-        if not (title_found and company_found):
-            for i, line in enumerate(lines[:3]):
-                if i in used_lines:
-                    continue
-                    
-                if '|' in line or '•' in line or ' - ' in line:
-                    separators = ['|', '•', ' - ']
-                    for sep in separators:
-                        if sep in line:
-                            parts = line.split(sep)
-                            if len(parts) >= 2:
-                                part1 = parts[0].strip()
-                                part2 = parts[1].strip()
-                                
-                                # Determine which is title and which is company
-                                if ResumePatterns.is_likely_job_title(part1):
-                                    exp.title = part1
-                                    exp.company = part2
-                                elif ResumePatterns.is_likely_company(part2):
-                                    exp.title = part1
-                                    exp.company = part2
-                                elif ResumePatterns.is_likely_job_title(part2):
-                                    exp.company = part1
-                                    exp.title = part2
-                                else:
-                                    # Default assumption
-                                    exp.title = part1
-                                    exp.company = part2
-                                
-                                title_found = company_found = True
-                                used_lines.add(i)
-                                break
-                    if title_found:
-                        break
+        # Lever prefers specific patterns - check first 3 lines for title/company/dates
+        # Pattern 1: First line is title (often ALL CAPS)
+        if lines and lines[0].strip():
+            first_line = lines[0].strip()
+            
+            # Don't parse section headers as experience
+            if ResumePatterns.is_section_header(first_line):
+                return None
+            
+            # Check if it's a job title pattern (ALL CAPS is common for titles)
+            # But don't include company/location info if it's on the same line
+            if '|' in first_line or ' at ' in first_line.lower():
+                # This line has both title and company, handle later
+                pass
+            elif (first_line.isupper() or 
+                  ResumePatterns.is_likely_job_title(first_line) or
+                  re.match(r'^[A-Z][A-Z\s\-,]+$', first_line)):  # All caps with some punctuation
+                # Store the whole line as title for now, we'll split it later if needed
+                exp.title = first_line
+                title_found = True
+                used_lines.add(0)
         
-        # Pattern 3: Title and company on separate lines
-        if not title_found or not company_found:
-            for i, line in enumerate(lines[:3]):
-                if i in used_lines:
-                    continue
-                    
-                line = line.strip()
-                if not title_found and ResumePatterns.is_likely_job_title(line):
-                    exp.title = line
-                    title_found = True
-                    used_lines.add(i)
-                elif not company_found and ResumePatterns.is_likely_company(line):
-                    exp.company = line
+        # Pattern 2: Second line is Company | Location or Company - Location
+        if len(lines) > 1 and 1 not in used_lines and title_found:
+            second_line = lines[1].strip()
+            
+            # CRITICAL FIX: Skip if this line is a bullet point
+            if re.match(r'^[•▪▫‣⁃\-\*]\s*', second_line):
+                # This is not a valid experience block
+                return None
+            
+            # CRITICAL FIX: Don't treat date patterns as company names
+            if re.search(r'\d{1,2}/\d{4}|\d{4}\s*[-–]\s*(?:\d{4}|Present|Current)', second_line, re.IGNORECASE):
+                # This is a date line, not a company line
+                pass
+            # Look for separator patterns
+            elif ' | ' in second_line:
+                parts = second_line.split(' | ')
+                if len(parts) >= 2:
+                    exp.company = parts[0].strip()
+                    exp.location = parts[1].strip()
                     company_found = True
-                    used_lines.add(i)
+                    used_lines.add(1)
+            elif ' - ' in second_line and not re.search(r'\d{4}', second_line):  # Not a date
+                parts = second_line.split(' - ')
+                if len(parts) >= 2:
+                    exp.company = parts[0].strip()
+                    exp.location = parts[1].strip()
+                    company_found = True
+                    used_lines.add(1)
+            elif ', ' in second_line:
+                # Could be Company, Location
+                parts = second_line.split(', ')
+                if len(parts) == 2 and re.search(r'\b[A-Z]{2}\b', parts[1]):
+                    exp.company = parts[0].strip()
+                    exp.location = second_line
+                    company_found = True
+                    used_lines.add(1)
+                else:
+                    exp.company = second_line
+                    company_found = True
+                    used_lines.add(1)
+            else:
+                # Just company name - but ensure it's not a bullet point or date
+                if (not re.match(r'^[•▪▫‣⁃\-\*]\s*', second_line) and
+                    not re.search(r'\d{1,2}/\d{4}|\d{4}', second_line)):
+                    exp.company = second_line
+                    company_found = True
+                    used_lines.add(1)
+        
+        # Pattern 3: Third line (or second if no company yet) is dates
+        date_line_idx = 2 if company_found else 1
+        if len(lines) > date_line_idx and date_line_idx not in used_lines:
+            date_line = lines[date_line_idx].strip()
+            
+            # Lever prefers MM/YYYY format
+            if re.search(r'\d{1,2}/\d{4}', date_line) or re.search(r'\d{4}', date_line):
+                start_date, end_date = DateParser.extract_date_range(date_line)
+                if start_date:
+                    exp.start_date = start_date
+                    exp.end_date = end_date
+                    if DateParser.is_current_position(date_line):
+                        exp.current = True
+                        exp.end_date = None
+                    used_lines.add(date_line_idx)
+        
+        # If we didn't get title/company from the structured format, try other patterns
+        if not exp.title or not exp.company:
+            # First check if first line has both title and company
+            if lines and 0 not in used_lines:
+                first_line = lines[0].strip()
+                
+                # Pattern: Title at Company
+                match = re.match(r'^(.+?)\s+(?:at|@)\s+(.+?)(?:\s*[\|\,]\s*(.+))?$', first_line, re.IGNORECASE)
+                if match:
+                    exp.title = match.group(1).strip()
+                    exp.company = match.group(2).strip()
+                    if match.group(3):
+                        location_part = match.group(3).strip()
+                        if re.search(r'\b[A-Z]{2}\b', location_part):
+                            exp.location = location_part
+                    title_found = company_found = True
+                    used_lines.add(0)
+        
+            # Handle first line that might have both title and company info
+            if lines and 0 not in used_lines:
+                first_line = lines[0].strip()
+                
+                # Check if first line contains BOTH title keywords AND company info
+                # This is a parsing error - we need to use next line for company
+                if (ResumePatterns.is_likely_job_title(first_line) and 
+                    (' | ' in first_line or ResumePatterns.is_likely_company(first_line))):
+                    
+                    # Extract just the title part
+                    if ' | ' in first_line:
+                        # Title was concatenated with company line, extract title only
+                        parts = first_line.split()
+                        title_parts = []
+                        for part in parts:
+                            if part == '|' or ResumePatterns.is_likely_company(part):
+                                break
+                            title_parts.append(part)
+                        if title_parts:
+                            exp.title = ' '.join(title_parts).strip()
+                            title_found = True
+                            used_lines.add(0)
+                    else:
+                        # Use the whole line as title if we can't separate it
+                        exp.title = first_line
+                        title_found = True
+                        used_lines.add(0)
+        
+        # CRITICAL FIX: Handle when parser incorrectly merged title and company on one line
+        # This happens when PDF extraction doesn't have proper line breaks
+        if title_found and exp.title and not company_found:
+            # Check if title contains company info (common parsing error)
+            title_text = exp.title
+            
+            # Common patterns where title includes company:
+            # "SENIOR SOFTWARE ENGINEER Tech Corp"
+            # "SOFTWARE ENGINEER StartupCo"
+            
+            # Strategy 1: Look for known job title pattern followed by capitalized words
+            job_title_match = re.match(r'^((?:SENIOR|JUNIOR|LEAD|PRINCIPAL|STAFF)?\s*(?:SOFTWARE|BACKEND|FRONTEND|FULLSTACK|FULL STACK|DATA|DEVOPS|PLATFORM|SYSTEMS?)\s*(?:ENGINEER|DEVELOPER|ARCHITECT|ANALYST|SCIENTIST|MANAGER))\s+(.+)$', title_text, re.IGNORECASE)
+            if job_title_match:
+                exp.title = job_title_match.group(1).strip()
+                company_info = job_title_match.group(2).strip()
+                
+                # Check if company info has location
+                if ' | ' in company_info:
+                    parts = company_info.split(' | ')
+                    exp.company = parts[0].strip()
+                    exp.location = parts[1].strip()
+                else:
+                    exp.company = company_info
+                
+                company_found = True
+            else:
+                # Strategy 2: Find where likely company name starts
+                words = title_text.split()
+                
+                # Find the last job-title-related word
+                last_title_idx = -1
+                for i, word in enumerate(words):
+                    if re.match(r'(?i)(engineer|developer|manager|analyst|architect|designer|lead|senior|junior|specialist|consultant|director|coordinator)', word):
+                        last_title_idx = i
+                
+                if last_title_idx >= 0 and last_title_idx < len(words) - 1:
+                    # Everything after the last title word is likely company
+                    exp.title = ' '.join(words[:last_title_idx + 1]).strip()
+                    company_part = ' '.join(words[last_title_idx + 1:]).strip()
+                    
+                    if company_part:
+                        # Check if company part has location info
+                        if ' | ' in company_part:
+                            parts = company_part.split(' | ')
+                            exp.company = parts[0].strip()
+                            exp.location = parts[1].strip()
+                        else:
+                            exp.company = company_part
+                        
+                        company_found = True
+        
+        # If we still don't have a company, check the second line again
+        if title_found and not company_found and len(lines) > 1:
+            second_line = lines[1].strip()
+            
+            # Make sure it's not a bullet or date line
+            if (second_line and
+                not re.match(r'^[•▪▫‣⁃\-\*]\s*', second_line) and
+                not re.search(r'\d{1,2}/\d{4}|\d{4}\s*[-–]', second_line)):
+                
+                # This could be the company line
+                if ' | ' in second_line:
+                    parts = second_line.split(' | ')
+                    exp.company = parts[0].strip()
+                    if len(parts) > 1:
+                        exp.location = parts[1].strip()
+                else:
+                    exp.company = second_line
+                
+                company_found = True
+                used_lines.add(1)
         
         # Extract location if not already found
         if not exp.location:
@@ -599,7 +730,8 @@ class ResumeParser:
                 # Check if line starts with action verb (common in responsibilities)
                 action_verbs = ['managed', 'developed', 'led', 'created', 'implemented',
                                'designed', 'built', 'established', 'improved', 'coordinated',
-                               'analyzed', 'increased', 'reduced', 'streamlined', 'optimized']
+                               'analyzed', 'increased', 'reduced', 'streamlined', 'optimized',
+                               'collaborated', 'delivered', 'architected', 'launched', 'spearheaded']
                 if any(line.lower().startswith(verb) for verb in action_verbs):
                     resp_lines.append(line)
                 else:
@@ -655,7 +787,13 @@ class ResumeParser:
     
     def _parse_education_block(self, block: str) -> Optional[Education]:
         """
-        Parse a single education block.
+        Parse a single education block using Lever-style patterns.
+        
+        Lever patterns for education:
+        - Degree (often ALL CAPS or Title Case)
+        - University | Location
+        - MM/YYYY - MM/YYYY or just graduation year
+        - GPA (optional)
         
         Args:
             block: Text block potentially containing education
@@ -667,64 +805,166 @@ class ResumeParser:
         if not lines:
             return None
         
+        # Quick validation: education blocks should NOT have job-related bullets
+        # This prevents mixing with experience content
+        job_indicators = ['managed', 'developed', 'led', 'implemented', 'designed',
+                         'built', 'created', 'established', 'coordinated', 'delivered']
+        block_lower = block.lower()
+        job_bullet_count = sum(1 for indicator in job_indicators if indicator in block_lower)
+        if job_bullet_count > 3:  # Too many job-related terms, likely not education
+            return None
+        
         edu = Education()
         used_lines = set()
         
-        # Common degree patterns
-        degree_patterns = [
-            # Bachelor of Science in Computer Science
-            r'(?i)(bachelor|master|phd|ph\.d\.|doctorate|associate|diploma)(?:\'s)?(?:\s+of)?\s+(?:of\s+)?(science|arts|engineering|business|technology|philosophy|education|fine\s+arts|laws?)\s*(?:in\s+)?([A-Za-z\s,]+?)(?:\s*[\|\,\.]|$)',
-            # B.S. Computer Science, M.S. Data Science
-            r'(?i)(b\.?s\.?|m\.?s\.?|b\.?a\.?|m\.?a\.?|b\.?tech|m\.?tech|m\.?b\.?a\.?|j\.?d\.?|m\.?d\.?|ph\.?d\.?)\s*(?:in\s+)?([A-Za-z\s,]+?)(?:\s*[\|\,\.]|$)',
-            # Computer Science, Bachelor of Science
-            r'(?i)([A-Za-z\s]+?),\s*(bachelor|master|phd|doctorate|associate)(?:\'s)?(?:\s+of)?\s+(science|arts|engineering|business|technology)',
-            # Simple degree mentions
-            r'(?i)(bachelor|master|phd|doctorate|associate|diploma|certificate)(?:\'s)?(?:\s+degree)?'
-        ]
-        
-        # Parse degree and major
-        degree_found = False
-        for i, line in enumerate(lines):
-            if degree_found:
-                break
-                
-            for pattern in degree_patterns:
-                match = re.search(pattern, line)
-                if match:
-                    groups = match.groups()
-                    if len(groups) >= 3:
-                        # Pattern with degree type, field, and major
-                        degree_type = groups[0]
-                        field = groups[1] if len(groups) > 1 else ''
-                        major = groups[2] if len(groups) > 2 else ''
-                        edu.degree = f"{degree_type} of {field}".strip().title()
-                        if major:
-                            edu.major = major.strip().title()
-                    elif len(groups) >= 2:
-                        # Pattern with degree abbreviation and major
-                        edu.degree = groups[0].upper().replace('.', '.')
-                        edu.major = groups[1].strip().title()
-                    else:
-                        # Simple degree
-                        edu.degree = match.group(0).strip().title()
+        # Lever pattern: First line is often the degree (ALL CAPS or specific format)
+        if lines and lines[0].strip():
+            first_line = lines[0].strip()
+            
+            # Don't parse section headers or skills content
+            if (ResumePatterns.is_section_header(first_line) or
+                'Programming Languages:' in first_line or
+                'Frameworks:' in first_line or
+                'Databases:' in first_line or
+                'Cloud:' in first_line):
+                return None
+            
+            # Check if first line contains BOTH degree and university (common parsing issue)
+            has_degree = re.search(r'(?i)(bachelor|master|ph\.?d|m\.?b\.?a|b\.?s|m\.?s|b\.?a|m\.?a|SCIENCE|ARTS|ENGINEERING)', first_line)
+            has_university = ResumePatterns.is_likely_university(first_line)
+            
+            if has_degree and has_university:
+                # Split degree and university
+                # Common patterns: "DEGREE University | Location" or "DEGREE University"
+                if ' | ' in first_line:
+                    # Split at pipe
+                    main_part, location_part = first_line.split(' | ', 1)
                     
-                    degree_found = True
+                    # Find where university name starts
+                    words = main_part.split()
+                    uni_start = -1
+                    for i, word in enumerate(words):
+                        if ResumePatterns.is_likely_university(word) or word in ['Stanford', 'Berkeley', 'MIT', 'Harvard']:
+                            uni_start = i
+                            break
+                    
+                    if uni_start > 0:
+                        edu.degree = ' '.join(words[:uni_start]).strip()
+                        edu.institution = ' '.join(words[uni_start:]).strip()
+                        edu.location = location_part.strip()
+                    else:
+                        # Fallback: assume first few words are degree
+                        edu.degree = main_part.strip()
+                        edu.location = location_part.strip()
+                else:
+                    # No pipe, need to find split point
+                    words = first_line.split()
+                    uni_start = -1
+                    for i, word in enumerate(words):
+                        if ResumePatterns.is_likely_university(word) or word in ['Stanford', 'Berkeley', 'MIT', 'Harvard', 'UC']:
+                            uni_start = i
+                            break
+                    
+                    if uni_start > 0:
+                        edu.degree = ' '.join(words[:uni_start]).strip()
+                        edu.institution = ' '.join(words[uni_start:]).strip()
+                    else:
+                        # Fallback
+                        edu.degree = first_line
+                
+                used_lines.add(0)
+            # Check if it's ALL CAPS degree only
+            elif first_line.isupper() and any(deg in first_line for deg in 
+                ['BACHELOR', 'MASTER', 'PHD', 'DEGREE', 'SCIENCE', 'ARTS', 'MBA', 'BS', 'MS', 'BA', 'MA']):
+                edu.degree = first_line.title()
+                used_lines.add(0)
+            # Check for standard degree patterns
+            elif has_degree:
+                edu.degree = first_line
+                used_lines.add(0)
+        
+        # Enhanced degree patterns (if not found in first line)
+        if not edu.degree:
+            degree_patterns = [
+                # Bachelor of Science in Computer Science
+                r'(?i)(bachelor|master|phd|ph\.d\.|doctorate|associate|diploma)(?:\'s)?(?:\s+of)?\s+(?:of\s+)?(science|arts|engineering|business|technology|philosophy|education|fine\s+arts|laws?)\s*(?:in\s+)?([A-Za-z\s,&]+?)(?:\s*[\|\,\.\-]|$)',
+                # B.S. Computer Science, M.S. Data Science
+                r'(?i)(b\.?s\.?c?\.?|m\.?s\.?c?\.?|b\.?a\.?|m\.?a\.?|b\.?tech|m\.?tech|m\.?b\.?a\.?|j\.?d\.?|m\.?d\.?|ph\.?d\.?|b\.?e\.?|m\.?e\.?)\s*(?:in\s+)?([A-Za-z\s,&]+?)(?:\s*[\|\,\.\-]|$)',
+                # MBA, MFA, etc.
+                r'(?i)(m\.?b\.?a\.?|m\.?f\.?a\.?|ll\.?m\.?|m\.?p\.?a\.?|m\.?p\.?h\.?)\s*(?:in\s+)?([A-Za-z\s,&]+)?',
+            ]
+            
+            # Parse degree and major
+            degree_found = False
+            for i, line in enumerate(lines):
+                if degree_found or i in used_lines:
+                    break
+                    
+                for pattern in degree_patterns:
+                    match = re.search(pattern, line)
+                    if match:
+                        groups = match.groups()
+                        if len(groups) >= 3:
+                            # Pattern with degree type, field, and major
+                            degree_type = groups[0]
+                            field = groups[1] if len(groups) > 1 else ''
+                            major = groups[2] if len(groups) > 2 else ''
+                            edu.degree = f"{degree_type} of {field}".strip().title()
+                            if major:
+                                edu.major = major.strip().title()
+                        elif len(groups) >= 2:
+                            # Pattern with degree abbreviation and major
+                            edu.degree = groups[0].upper().replace('.', '.')
+                            edu.major = groups[1].strip().title()
+                        else:
+                            # Simple degree
+                            edu.degree = match.group(0).strip().title()
+                        
+                        degree_found = True
+                        used_lines.add(i)
+                        break
+        
+        # Lever pattern: Second line is often University | Location
+        if len(lines) > 1 and 1 not in used_lines:
+            second_line = lines[1].strip()
+            
+            # Check for University | Location pattern
+            if ' | ' in second_line:
+                parts = second_line.split(' | ')
+                if len(parts) >= 2:
+                    edu.institution = parts[0].strip()
+                    edu.location = parts[1].strip()
+                    used_lines.add(1)
+            # Check for University, Location pattern
+            elif ', ' in second_line and ResumePatterns.is_likely_university(second_line):
+                # Don't split if it's just the university name with commas
+                if re.search(r',\s*[A-Z]{2}$', second_line):
+                    # Has state abbreviation at end
+                    parts = second_line.rsplit(', ', 1)
+                    edu.institution = parts[0].strip()
+                    edu.location = second_line
+                else:
+                    edu.institution = second_line
+                used_lines.add(1)
+            # Just university name
+            elif ResumePatterns.is_likely_university(second_line):
+                edu.institution = second_line
+                used_lines.add(1)
+        
+        # If no institution found in structured format, search remaining lines
+        if not edu.institution:
+            for i, line in enumerate(lines):
+                if i in used_lines:
+                    continue
+                    
+                # Skip if it's just a location
+                if re.match(r'^[A-Za-z\s]+,\s*[A-Z]{2}$', line.strip()):
+                    continue
+                    
+                if ResumePatterns.is_likely_university(line):
+                    edu.institution = line.strip()
                     used_lines.add(i)
                     break
-        
-        # Look for university/institution
-        for i, line in enumerate(lines):
-            if i in used_lines:
-                continue
-                
-            # Skip if it's just a location
-            if re.match(r'^[A-Za-z\s]+,\s*[A-Z]{2}$', line.strip()):
-                continue
-                
-            if ResumePatterns.is_likely_university(line):
-                edu.institution = line.strip()
-                used_lines.add(i)
-                break
         
         # If no institution found, check first few lines
         if not edu.institution:
@@ -1112,7 +1352,12 @@ class ResumeParser:
     
     def _split_into_blocks(self, text: str) -> List[str]:
         """
-        Split text into logical blocks (usually separated by blank lines or bullets).
+        Split text into logical blocks using Lever-style patterns.
+        
+        Lever typically expects:
+        - Clear separation between entries (blank lines)
+        - Each entry starts with a title/role
+        - Consistent formatting within sections
         
         Args:
             text: Text to split
@@ -1130,46 +1375,61 @@ class ResumeParser:
         for block in major_blocks:
             lines = block.split('\n')
             
-            # Check if this block looks like an experience/education entry
-            # These typically have a title/company on first lines followed by bullets
-            has_bullets = any(re.match(r'^[•▪▫‣⁃\-\*]\s', line) for line in lines)
+            # Check if this block has multiple entries (common in experience/education)
+            # Look for patterns that indicate new entries
+            current_block = []
             
-            if has_bullets and len(lines) > 3:
-                # This looks like a structured entry (experience, education, etc.)
-                # Keep it as one block
-                final_blocks.append(block)
-            else:
-                # Split further by patterns
-                current_block = []
+            for i, line in enumerate(lines):
+                line_stripped = line.strip()
+                if not line_stripped:
+                    continue
                 
-                for i, line in enumerate(lines):
-                    # Check if this line starts a new item
-                    is_new_item = False
-                    
-                    if i > 0:  # Don't split on first line
-                        # Check various patterns that indicate a new item
-                        is_new_item = (
-                            # Job title pattern: Title at Company
-                            re.search(r'\bat\b.*(?:Inc|LLC|Corp|Company)', line, re.IGNORECASE) or
-                            # Date range at the beginning or end of line
-                            (re.match(r'^\d{4}', line) or re.search(r'\d{4}\s*[-–]\s*(?:\d{4}|Present|Current)', line)) or
-                            # Line is all caps (section header)
-                            (line.isupper() and len(line.split()) < 5) or
-                            # Common section starters
-                            (len(line) > 0 and i > 0 and 
-                             ResumePatterns.is_likely_job_title(line) and 
-                             not re.match(r'^[•▪▫‣⁃\-\*]', lines[i-1]))
-                        )
-                    
-                    if is_new_item and current_block:
-                        # Save current block and start new one
-                        final_blocks.append('\n'.join(current_block))
-                        current_block = [line]
-                    else:
+                # Check if this line starts a new entry
+                is_new_entry = False
+                
+                if current_block:  # Only check if we already have content
+                    # Skip if line is a bullet point
+                    if re.match(r'^[•▪▫‣⁃\-\*]\s*', line_stripped):
                         current_block.append(line)
+                        continue
+                    
+                    # Lever pattern 1: ALL CAPS title (common for job titles)
+                    if line_stripped.isupper() and len(line_stripped.split()) >= 1:
+                        # Make sure it's not a section header
+                        if not ResumePatterns.is_section_header(line_stripped):
+                            # Check if previous block has meaningful content
+                            # Need at least 2 non-bullet lines
+                            non_bullet_count = sum(1 for l in current_block 
+                                                 if l.strip() and not re.match(r'^[•▪▫‣⁃\-\*]\s*', l.strip()))
+                            if non_bullet_count >= 2:  # Title + company at minimum
+                                is_new_entry = True
+                    
+                    # Lever pattern 2: Degree pattern in education
+                    elif ResumePatterns.is_likely_degree(line_stripped):
+                        # Check if we're in education section and have content
+                        non_bullet_count = sum(1 for l in current_block 
+                                             if l.strip() and not re.match(r'^[•▪▫‣⁃\-\*]\s*', l.strip()))
+                        if non_bullet_count >= 2:
+                            is_new_entry = True
+                    
+                    # Lever pattern 3: Clear job title pattern after content
+                    elif (ResumePatterns.is_likely_job_title(line_stripped) and 
+                          not re.search(r'\d{1,2}/\d{4}|\d{4}', line_stripped)):  # Not a date line
+                        # Need substantial previous content
+                        non_bullet_count = sum(1 for l in current_block 
+                                             if l.strip() and not re.match(r'^[•▪▫‣⁃\-\*]\s*', l.strip()))
+                        if non_bullet_count >= 3:  # Title, company, dates at minimum
+                            is_new_entry = True
                 
-                if current_block:
+                if is_new_entry and current_block:
+                    # Save current block and start new one
                     final_blocks.append('\n'.join(current_block))
+                    current_block = [line]
+                else:
+                    current_block.append(line)
+            
+            if current_block:
+                final_blocks.append('\n'.join(current_block))
         
         return [b.strip() for b in final_blocks if b.strip()]
     

@@ -21,6 +21,7 @@ __email__ = "contact@pyresume.dev"
 
 # Main exports
 from .parser import ResumeParser
+from .intelligent_parser import IntelligentResumeParser
 from .models.resume import (
     Resume,
     ContactInfo,
@@ -30,6 +31,15 @@ from .models.resume import (
     Project,
     Certification
 )
+
+# Import providers if available
+try:
+    from .providers import registry
+    from .providers.anthropic_provider import AnthropicProvider
+    from .providers.openai_provider import OpenAIProvider
+    from .providers.local_provider import LocalLLMProvider
+except ImportError:
+    pass
 
 # Utility exports
 from .utils.dates import DateParser
@@ -44,6 +54,7 @@ from .extractors.text import TextExtractor
 __all__ = [
     # Main classes
     'ResumeParser',
+    'IntelligentResumeParser',
     
     # Data models
     'Resume',

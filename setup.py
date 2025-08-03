@@ -37,6 +37,16 @@ extras_require = {
         'scikit-learn>=1.2.0',
         'numpy>=1.21.0',
     ],
+    'anthropic': [
+        'anthropic>=0.18.0',
+    ],
+    'openai': [
+        'openai>=1.0.0',
+    ],
+    'llm': [
+        'anthropic>=0.18.0',
+        'openai>=1.0.0',
+    ],
     'dev': [
         'pytest>=7.0.0',
         'pytest-cov>=4.0.0',
@@ -55,18 +65,21 @@ extras_require = {
         'spacy>=3.5.0',
         'scikit-learn>=1.2.0',
         'numpy>=1.21.0',
+        # LLM dependencies
+        'anthropic>=0.18.0',
+        'openai>=1.0.0',
     ]
 }
 
 setup(
-    name="pyresume",
+    name="leverparser",
     version="0.1.0",
     author="PyResume Team",
     author_email="contact@pyresume.dev",
     description="A fast, standalone Python library for parsing resumes with high accuracy and zero external dependencies",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pyresume/pyresume",
+    url="https://github.com/wespiper/leverparser",
     project_urls={
         "Bug Reports": "https://github.com/pyresume/pyresume/issues",
         "Source": "https://github.com/pyresume/pyresume",
@@ -82,8 +95,7 @@ setup(
         "Intended Audience :: Developers",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Text Processing :: General",
-        "Topic :: Office/Business :: Human Resources",
-        "License :: OSI Approved :: MIT License",
+        "Topic :: Office/Business",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
@@ -95,11 +107,12 @@ setup(
     python_requires=">=3.8",
     install_requires=install_requires,
     extras_require=extras_require,
-    entry_points={
-        "console_scripts": [
-            "pyresume=pyresume.cli:main",
-        ],
-    },
+    # Note: CLI entry point commented out until cli module is implemented
+    # entry_points={
+    #     "console_scripts": [
+    #         "pyresume=pyresume.cli:main",
+    #     ],
+    # },
     keywords="resume parser cv parsing pdf docx text extraction nlp",
     zip_safe=False,
     
@@ -107,9 +120,9 @@ setup(
     platforms=["any"],
     license="MIT",
     
-    # Testing
-    test_suite="tests",
-    tests_require=extras_require["dev"],
+    # Testing (deprecated - moved to pyproject.toml)
+    # test_suite="tests",
+    # tests_require=extras_require["dev"],
     
     # For development installations
     setup_requires=[

@@ -10,12 +10,14 @@ from dateutil import parser as dateutil_parser
 class DateParser:
     """Parse various date formats commonly found in resumes."""
     
-    # Common date patterns in resumes
+    # Common date patterns in resumes - ordered by Lever preference
     DATE_PATTERNS = [
+        # MM/YYYY format (Lever preferred)
+        r'(\d{1,2})/(\d{4})',
+        # MM-YYYY format
+        r'(\d{1,2})-(\d{4})',
         # Month Year formats
         r'(?i)(jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|september|oct|october|nov|november|dec|december)\s+(\d{4})',
-        # MM/YYYY, MM-YYYY
-        r'(\d{1,2})[/-](\d{4})',
         # YYYY only
         r'(\d{4})',
         # Quarter formats
@@ -89,7 +91,7 @@ class DateParser:
             if month and 1900 <= year <= 2100:
                 return date(year, month, 1)
         
-        elif '[/-]' in pattern:  # MM/YYYY format
+        elif '/' in pattern or '-' in pattern:  # MM/YYYY or MM-YYYY format
             month_str, year_str = groups
             month = int(month_str)
             year = int(year_str)
@@ -124,7 +126,8 @@ class DateParser:
     @staticmethod
     def extract_date_range(text: str) -> Tuple[Optional[date], Optional[date]]:
         """
-        Extract start and end dates from text like "Jan 2020 - Mar 2022".
+        Extract start and end dates from text like "01/2020 - 03/2022".
+        Lever prefers MM/YYYY format.
         
         Args:
             text: Text containing date range
@@ -132,6 +135,14 @@ class DateParser:
         Returns:
             Tuple of (start_date, end_date)
         """
+        # First try to find MM/YYYY - MM/YYYY pattern (Lever preferred)
+        mm_yyyy_pattern = r'(\d{1,2}/\d{4})\s*[-–]\s*(\d{1,2}/\d{4}|present|current)'
+        match = re.search(mm_yyyy_pattern, text, re.IGNORECASE)
+        if match:
+            start_date = DateParser.parse_date(match.group(1))
+            end_date = DateParser.parse_date(match.group(2))
+            return start_date, end_date
+        
         # Common date range separators
         separators = [' - ', ' – ', ' to ', ' through ', ' until ']
         

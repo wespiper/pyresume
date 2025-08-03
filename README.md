@@ -1,22 +1,23 @@
-# 🚀 PyResume
+# 🚀 LeverParser
 
-[![PyPI version](https://badge.fury.io/py/pyresume.svg)](https://badge.fury.io/py/pyresume)
-[![Python](https://img.shields.io/pypi/pyversions/pyresume.svg)](https://pypi.org/project/pyresume/)
+[![PyPI version](https://badge.fury.io/py/leverparser.svg)](https://badge.fury.io/py/leverparser)
+[![Python](https://img.shields.io/pypi/pyversions/leverparser.svg)](https://pypi.org/project/leverparser/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://github.com/pyresume/pyresume/workflows/tests/badge.svg)](https://github.com/pyresume/pyresume/actions)
-[![Coverage](https://codecov.io/gh/pyresume/pyresume/branch/main/graph/badge.svg)](https://codecov.io/gh/pyresume/pyresume)
-[![Downloads](https://pepy.tech/badge/pyresume)](https://pepy.tech/project/pyresume)
+[![Tests](https://github.com/wespiper/leverparser/workflows/tests/badge.svg)](https://github.com/wespiper/leverparser/actions)
+[![Coverage](https://codecov.io/gh/wespiper/leverparser/branch/main/graph/badge.svg)](https://codecov.io/gh/wespiper/leverparser)
+[![Downloads](https://pepy.tech/badge/leverparser)](https://pepy.tech/project/leverparser)
 
-**A fast, standalone Python library for parsing resumes with high accuracy and zero external dependencies.**
+**A Python library for parsing resumes with Lever ATS compatibility. Extract structured data from resumes with high accuracy.**
 
-PyResume transforms messy resume files into clean, structured data you can actually use. No API keys, no external services, no headaches—just pure Python parsing power.
+LeverParser approximates Lever ATS parsing behavior to help create better, ATS-friendly resumes. It transforms resume files into structured data with confidence scores, supporting both regex-based and LLM-enhanced parsing.
 
-## ✨ Why PyResume?
+## ✨ Why LeverParser?
 
+- **🎯 Lever ATS Compatible**: Approximates Lever's parsing behavior for ATS optimization
 - **🔒 Privacy-First**: Parse resumes locally without sending data to external services
-- **⚡ Lightning Fast**: Process resumes in under 2 seconds with 95%+ accuracy
-- **🎯 Battle-Tested**: 73% test coverage with real-world resume fixtures
-- **📦 Zero Dependencies**: Minimal external requirements, maximum reliability
+- **⚡ Lightning Fast**: Process resumes in under 2 seconds with high accuracy
+- **🤖 LLM Enhanced**: Optional integration with OpenAI/Anthropic for complex formats
+- **📊 Confidence Scores**: Know how well each section was parsed
 - **🔧 Developer-Friendly**: Simple API, comprehensive documentation, and type hints throughout
 
 ## 📊 Performance at a Glance
@@ -34,13 +35,13 @@ PyResume transforms messy resume files into clean, structured data you can actua
 ### Installation
 
 ```bash
-pip install pyresume
+pip install leverparser
 ```
 
 ### Basic Usage
 
 ```python
-from pyresume import ResumeParser
+from leverparser import ResumeParser
 
 # Initialize the parser
 parser = ResumeParser()
@@ -215,24 +216,24 @@ Based on testing with 100+ diverse resume samples:
 
 ### Minimal Installation
 ```bash
-pip install pyresume
+pip install leverparser
 ```
 
 ### With PDF Support
 ```bash
-pip install pyresume[pdf]
+pip install leverparser[pdf]
 # or
-pip install pyresume pdfplumber
+pip install leverparser pdfplumber
 ```
 
 ### With All Features
 ```bash
-pip install pyresume[all]
+pip install leverparser[all]
 ```
 
 ### Development Installation
 ```bash
-git clone https://github.com/pyresume/pyresume.git
+git clone https://github.com/wespiper/leverparser.git
 cd pyresume
 pip install -e .[dev]
 ```
@@ -322,8 +323,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support & Community
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/pyresume/pyresume/issues)
-- **Discussions**: [Join the community](https://github.com/pyresume/pyresume/discussions)
+- **GitHub Issues**: [Report bugs or request features](https://github.com/wespiper/leverparser/issues)
+- **Discussions**: [Join the community](https://github.com/wespiper/leverparser/discussions)
 - **Email**: [contact@pyresume.dev](mailto:contact@pyresume.dev)
 
 ---
